@@ -228,12 +228,6 @@ BO_ 800 VSC1S07: 8 CGW
  SG_ PCSBRSTA : 50|2@0+ (1,0) [0|0] "" DS1
  SG_ VSC07SUM : 63|8@0+ (1,0) [0|0] "" DS1,FCM
 
-BO_ 800 VSC1: 8 CGW
- SG_ ACC_BRAKING : 8|1@0+ (1,0) [0|0] "" DS1,FCM
- SG_ SLOPE_ANGLE : 23|8@0- (1,0) [0|0] "deg" DS1
- SG_ ACC_BRAKING2 : 26|1@0+ (1,0) [0|0] "" Vector__XXX
- SG_ ACCEL : 39|8@0- (0.04,0) [0|0] "m/s^2" DS1
-
 BO_ 835 ACC_CONTROL: 8 DSU
  SG_ ACCEL_CMD : 7|16@0- (0.001,0) [-20|20] "m/s^2" HCU
  SG_ ALLOW_LONG_PRESS : 17|2@0+ (1,0) [0|2] "" XXX
