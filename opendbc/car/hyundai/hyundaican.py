@@ -117,6 +117,25 @@ def create_clu11(packer, frame, clu11, button, CP):
   return packer.make_can_msg("CLU11", bus, values)
 
 
+def create_hda11_mfc(packer, frame, hda11_mfc):
+  values = {s: hda11_mfc[s] for s in [
+    "Counter",
+    "NEW_SIGNAL_1",
+    "NEW_SIGNAL_2",
+    "NEW_SIGNAL_3",
+    "NEW_SIGNAL_4",
+    "NEW_SIGNAL_5",
+    "NEW_SIGNAL_6",
+    "NEW_SIGNAL_7",
+    "NEW_SIGNAL_8",
+    "NEW_SIGNAL_9",
+  ]}
+  values["NEW_SIGNAL_4"] = 0x00
+  values["NEW_SIGNAL_8"] = 0x00
+  values["Counter"] = frame % 0x10
+  return packer.make_can_msg("HDA11_MFC", 0, values)
+
+
 def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
   values = {
     "LFA_Icon_State": 2 if enabled else 0,
@@ -125,6 +144,7 @@ def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
     "HDA_VSetReq": hda_set_speed,
   }
   return packer.make_can_msg("LFAHDA_MFC", 0, values)
+
 
 def create_acc_commands(packer, enabled, accel, upper_jerk, idx, hud_control, set_speed, stopping, long_override, use_fca):
   commands = []
@@ -187,6 +207,7 @@ def create_acc_commands(packer, enabled, accel, upper_jerk, idx, hud_control, se
 
   return commands
 
+
 def create_acc_opt(packer):
   commands = []
 
@@ -205,6 +226,7 @@ def create_acc_opt(packer):
   commands.append(packer.make_can_msg("FCA12", 0, fca12_values))
 
   return commands
+
 
 def create_frt_radar_opt(packer):
   frt_radar11_values = {
