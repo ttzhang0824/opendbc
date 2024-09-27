@@ -77,6 +77,9 @@ class CarInterface(CarInterfaceBase):
       if 0x38d in fingerprint[0] or 0x38d in fingerprint[2]:
         ret.flags |= HyundaiFlags.USE_FCA.value
 
+      if any(fw.ecu == "fwdRadar" and b'-----' in fw.fwVersion for fw in car_fw):
+        ret.flags |= HyundaiFlags.CAMERA_SCC.value
+
       if candidate in LEGACY_SAFETY_MODE_CAR:
         # these cars require a special panda safety mode due to missing counters and checksums in the messages
         ret.safetyConfigs = [get_safety_config(structs.CarParams.SafetyModel.hyundaiLegacy)]
