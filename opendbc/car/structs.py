@@ -434,6 +434,7 @@ class CarParams:
     volkswagenMqbEvo = auto()
     chryslerCusw = auto()
     psa = auto()
+    fcaGiorgio = auto()
 
   class SteerControlType(StrEnum):
     torque = auto()
