@@ -122,8 +122,13 @@ def create_clu11(packer, frame, clu11, button, CP):
 
 
 def create_lfahda_mfc(packer, enabled, mads, hda_set_speed=0):
+  if mads.mads_enabled_toggle:
+    lfa_icon = 2 if mads.lat_active else 3 if mads.disengaging else 1 if mads.paused else 0
+  else:
+    lfa_icon = 2 if enabled else 0
+
   values = {
-    "LFA_Icon_State": mads.lfa_icon,
+    "LFA_Icon_State": lfa_icon,
     "HDA_Active": 1 if hda_set_speed else 0,
     "HDA_Icon_State": 2 if hda_set_speed else 0,
     "HDA_VSetReq": hda_set_speed,
