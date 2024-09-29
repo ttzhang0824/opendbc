@@ -8,7 +8,7 @@ from opendbc.car import create_button_events, structs
 from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, CAN_GEARS, CAMERA_SCC_CAR, \
-                                                   CANFD_CAR, Buttons, CarControllerParams
+                                                   CANFD_CAR, Buttons, CarControllerParams, HyundaiFlagsSP
 from opendbc.car.interfaces import CarStateBase
 
 ButtonType = structs.CarState.ButtonEvent.Type
@@ -168,11 +168,19 @@ class CarState(CarStateBase):
     self.clu11 = copy.copy(cp.vl["CLU11"])
     self.steer_state = cp.vl["MDPS12"]["CF_Mdps_ToiActive"]  # 0 NOT ACTIVE, 1 ACTIVE
     prev_cruise_buttons = self.cruise_buttons[-1]
+    prev_main_buttons = self.main_buttons[-1]
     self.cruise_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwState"])
     self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
 
-    if self.CP.openpilotLongitudinalControl:
-      ret.buttonEvents = create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT)
+    prev_alt_button = self.alt_button
+    if self.CP.flags & HyundaiFlagsSP.CAN_LFA_BUTTON:
+      self.alt_button = cp.vl["BCM_PO_11"]["LFA_Pressed"]
+
+    ret.buttonEvents = [
+      *create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
+      *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.altButton3}),
+      *create_button_events(self.alt_button, prev_alt_button, {1: ButtonType.altButton1}),
+    ]
 
     return ret
 
@@ -247,8 +255,10 @@ class CarState(CarStateBase):
       ret.cruiseState.nonAdaptive = cp.vl["MANUAL_SPEED_LIMIT_ASSIST"]["MSLA_ENABLED"] == 1
 
     prev_cruise_buttons = self.cruise_buttons[-1]
+    prev_main_buttons = self.main_buttons[-1]
     self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
     self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
+
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
 
@@ -256,8 +266,14 @@ class CarState(CarStateBase):
       self.hda2_lfa_block_msg = copy.copy(cp_cam.vl["CAM_0x362"] if self.CP.flags & HyundaiFlags.CANFD_HDA2_ALT_STEERING
                                           else cp_cam.vl["CAM_0x2a4"])
 
-    if self.CP.openpilotLongitudinalControl:
-      ret.buttonEvents = create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT)
+    prev_alt_button = self.alt_button
+    self.alt_button = cp.vl[self.cruise_btns_msg_canfd]["LFA_BTN"]
+
+    ret.buttonEvents = [
+      *create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
+      *create_button_events(self.main_buttons[-1], prev_main_buttons, {1: ButtonType.altButton3}),
+      *create_button_events(self.alt_button, prev_alt_button, {1: ButtonType.altButton1}),
+    ]
 
     return ret
 

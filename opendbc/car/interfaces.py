@@ -18,6 +18,8 @@ from opendbc.car.common.simple_kalman import KF1D, get_kalman_gain
 from opendbc.car.common.numpy_fast import clip
 from opendbc.car.values import PLATFORMS
 
+from openpilot.sunnypilot.selfdrive.car.interfaces import CarInterfaceBaseSP, CarStateBaseSP, CarControllerBaseSP
+
 GearShifter = structs.CarState.GearShifter
 
 V_CRUISE_MAX = 145
@@ -84,8 +86,9 @@ def get_torque_params():
 
 # generic car and radar interfaces
 
-class CarInterfaceBase(ABC):
+class CarInterfaceBase(CarInterfaceBaseSP):
   def __init__(self, CP: structs.CarParams, CarController, CarState):
+    super().__init__(CP, CarController, CarState)
     self.CP = CP
 
     self.frame = 0
@@ -103,6 +106,9 @@ class CarInterfaceBase(ABC):
     self.CC: CarControllerBase = CarController(dbc_name, CP)
 
   def apply(self, c: structs.CarControl, now_nanos: int | None = None) -> tuple[structs.CarControl.Actuators, list[CanData]]:
+    # update prevs
+    self.update_prevs()
+
     if now_nanos is None:
       now_nanos = int(time.monotonic() * 1e9)
     return self.CC.update(c, self.CS, now_nanos)
@@ -230,6 +236,8 @@ class CarInterfaceBase(ABC):
       if cp is not None:
         cp.update_strings(can_packets)
 
+    self.CS.button_events = []
+
     # get CarState
     ret = self._update()
 
@@ -270,8 +278,9 @@ class RadarInterfaceBase(ABC):
     return None
 
 
-class CarStateBase(ABC):
+class CarStateBase(CarStateBaseSP):
   def __init__(self, CP: structs.CarParams):
+    super().__init__(CP)
     self.CP = CP
     self.car_fingerprint = CP.carFingerprint
     self.out = structs.CarState()
@@ -378,8 +387,9 @@ class CarStateBase(ABC):
     return None
 
 
-class CarControllerBase(ABC):
+class CarControllerBase(CarControllerBaseSP):
   def __init__(self, dbc_name: str, CP: structs.CarParams):
+    super().__init__(dbc_name, CP)
     self.CP = CP
     self.frame = 0
 

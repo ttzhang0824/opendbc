@@ -3,7 +3,7 @@ from opendbc.car import get_safety_config, structs
 from opendbc.car.hyundai.hyundaicanfd import CanBus
 from opendbc.car.hyundai.values import HyundaiFlags, CAR, DBC, CANFD_CAR, CAMERA_SCC_CAR, CANFD_RADAR_SCC_CAR, \
                                                    CANFD_UNSUPPORTED_LONGITUDINAL_CAR, EV_CAR, HYBRID_CAR, LEGACY_SAFETY_MODE_CAR, \
-                                                   UNSUPPORTED_LONGITUDINAL_CAR, Buttons
+                                                   UNSUPPORTED_LONGITUDINAL_CAR, Buttons, HyundaiFlagsSP
 from opendbc.car.hyundai.radar_interface import RADAR_START_ADDR
 from opendbc.car.interfaces import CarInterfaceBase
 from opendbc.car.disable_ecu import disable_ecu
@@ -118,6 +118,10 @@ class CarInterface(CarInterfaceBase):
 
       if candidate in CAMERA_SCC_CAR:
         ret.safetyConfigs[0].safetyParam |= Panda.FLAG_HYUNDAI_CAMERA_SCC
+
+      if 0x391 in fingerprint[0]:
+        ret.safetyConfigs[-1].spFlags |= HyundaiFlagsSP.CAN_LFA_BUTTON.value
+        ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_LFA_BUTTON
 
     if ret.openpilotLongitudinalControl:
       ret.safetyConfigs[-1].safetyParam |= Panda.FLAG_HYUNDAI_LONG

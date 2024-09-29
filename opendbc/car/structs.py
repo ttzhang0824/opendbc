@@ -337,6 +337,7 @@ class CarParams:
   class SafetyConfig:
     safetyModel: 'CarParams.SafetyModel' = field(default_factory=lambda: CarParams.SafetyModel.silent)
     safetyParam: int = auto_field()
+    spFlags: int = auto_field()  # flags for car specific quirks in sunnypilot
 
   @auto_dataclass
   class LateralParams:

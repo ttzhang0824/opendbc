@@ -6,7 +6,8 @@ hyundai_checksum = crcmod.mkCrcFun(0x11D, initCrc=0xFD, rev=False, xorOut=0xdf)
 def create_lkas11(packer, frame, CP, apply_steer, steer_req,
                   torque_fault, lkas11, sys_warning, sys_state, enabled,
                   left_lane, right_lane,
-                  left_lane_depart, right_lane_depart):
+                  left_lane_depart, right_lane_depart,
+                  mads):
   values = {s: lkas11[s] for s in [
     "CF_Lkas_LdwsActivemode",
     "CF_Lkas_LdwsSysState",
@@ -48,7 +49,10 @@ def create_lkas11(packer, frame, CP, apply_steer, steer_req,
     # FcwOpt_USM 2 = Green car + lanes
     # FcwOpt_USM 1 = White car + lanes
     # FcwOpt_USM 0 = No car + lanes
-    values["CF_Lkas_FcwOpt_USM"] = 2 if enabled else 1
+    if mads.enabled_toggle:
+      values["CF_Lkas_FcwOpt_USM"] = 2 if mads.lat_active or mads.disengaging else 1
+    else:
+      values["CF_Lkas_FcwOpt_USM"] = 2 if enabled else 1
 
     # SysWarning 4 = keep hands on wheel
     # SysWarning 5 = keep hands on wheel (red)
@@ -65,7 +69,7 @@ def create_lkas11(packer, frame, CP, apply_steer, steer_req,
     # SysState 1-2 = white car + lanes
     # SysState 3 = green car + lanes, green steering wheel
     # SysState 4 = green car + lanes
-    values["CF_Lkas_LdwsSysState"] = 3 if enabled else 1
+    values["CF_Lkas_LdwsSysState"] = 3 if (mads.lat_active if mads.enabled_toggle else enabled) else 1
     values["CF_Lkas_LdwsOpt_USM"] = 2  # non-2 changes above SysState definition
 
     # these have no effect
@@ -117,9 +121,9 @@ def create_clu11(packer, frame, clu11, button, CP):
   return packer.make_can_msg("CLU11", bus, values)
 
 
-def create_lfahda_mfc(packer, enabled, hda_set_speed=0):
+def create_lfahda_mfc(packer, enabled, mads, hda_set_speed=0):
   values = {
-    "LFA_Icon_State": 2 if enabled else 0,
+    "LFA_Icon_State": mads.lfa_icon,
     "HDA_Active": 1 if hda_set_speed else 0,
     "HDA_Icon_State": 2 if hda_set_speed else 0,
     "HDA_VSetReq": hda_set_speed,
