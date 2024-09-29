@@ -173,7 +173,7 @@ class CarState(CarStateBase):
     self.main_buttons.extend(cp.vl_all["CLU11"]["CF_Clu_CruiseSwMain"])
 
     prev_alt_button = self.alt_button
-    if self.CP.flags & HyundaiFlagsSP.CAN_LFA_BUTTON:
+    if self.CP.flags & HyundaiFlagsSP.HAS_LFA_BUTTON:
       self.alt_button = cp.vl["BCM_PO_11"]["LFA_Pressed"]
 
     ret.buttonEvents = [
@@ -258,7 +258,6 @@ class CarState(CarStateBase):
     prev_main_buttons = self.main_buttons[-1]
     self.cruise_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["CRUISE_BUTTONS"])
     self.main_buttons.extend(cp.vl_all[self.cruise_btns_msg_canfd]["ADAPTIVE_CRUISE_MAIN_BTN"])
-
     self.buttons_counter = cp.vl[self.cruise_btns_msg_canfd]["COUNTER"]
     ret.accFaulted = cp.vl["TCS"]["ACCEnable"] != 0  # 0 ACC CONTROL ENABLED, 1-3 ACC CONTROL DISABLED
 
