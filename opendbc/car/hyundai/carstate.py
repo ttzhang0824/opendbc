@@ -266,7 +266,8 @@ class CarState(CarStateBase):
                                           else cp_cam.vl["CAM_0x2a4"])
 
     prev_alt_button = self.alt_button
-    self.alt_button = cp.vl[self.cruise_btns_msg_canfd]["LFA_BTN"]
+    lfa_button = "LFA_BTN" if self.CP.flags & HyundaiFlags.CANFD_ALT_BUTTONS else "LKAS_BTN"
+    self.alt_button = cp.vl[self.cruise_btns_msg_canfd][lfa_button]
 
     ret.buttonEvents = [
       *create_button_events(self.cruise_buttons[-1], prev_cruise_buttons, BUTTONS_DICT),
